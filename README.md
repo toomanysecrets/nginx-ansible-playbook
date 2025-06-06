@@ -1,2 +1,2 @@
 # nginx-ansible-playbook
-Simple Ansible playbook to install the Nginx server, get it up and running, ensure it attempts to restart if it goes down for any reason using a systemd override, and reinforce it with watchdog to do the same.
+Preparation for a server installation with Nginx, focusing on systemd, control with systemd watchdog and timer (in addition to systemd's own restart-on-failure). It also incorporates an SELinux policy for HTTP/HTTPS content.
