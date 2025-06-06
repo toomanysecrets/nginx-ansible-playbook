@@ -1,0 +1,9 @@
+- name: Instalar y configurar Nginx con watchdog, firewall y SELinux
+  hosts: servidores
+  become: true
+  roles:
+    - nginx
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true

@@ -1,0 +1,9 @@
+[Unit]
+Description=Nginx Watchdog
+Wants=nginx.service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl is-active nginx.service
+ExecStartPost=/bin/bash -c '[[ $? -ne 0 ]] && systemctl restart nginx.service'

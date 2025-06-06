@@ -1,0 +1,63 @@
+- name: Instalar nginx
+  ansible.builtin.yum:
+    name: nginx
+    state: present
+  become: true
+
+- name: Asegurar que nginx está arrancado y habilitado
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  become: true
+
+- name: Configurar override de systemd para nginx (Restart=on-failure)
+  ansible.builtin.copy:
+    src: nginx-override.conf
+    dest: /etc/systemd/system/nginx.service.d/override.conf
+    mode: '0644'
+  notify: Reload systemd
+  become: true
+
+- name: Copiar servicio watchdog
+  ansible.builtin.copy:
+    src: nginx-watchdog.service
+    dest: /etc/systemd/system/nginx-watchdog.service
+    mode: '0644'
+  become: true
+
+- name: Copiar timer watchdog
+  ansible.builtin.copy:
+    src: nginx-watchdog.timer
+    dest: /etc/systemd/system/nginx-watchdog.timer
+    mode: '0644'
+  become: true
+
+- name: Activar y arrancar timer
+  ansible.builtin.systemd:
+    name: nginx-watchdog.timer
+    state: started
+    enabled: true
+  become: true
+
+- name: Abrir puertos en firewalld (HTTP, HTTPS)
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - http
+    - https
+  become: true
+
+- name: Activar booleano SELinux para nginx
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+  become: true
+
+- name: Aplicar contexto SELinux si es necesario (solo si hay errores previos)
+  ansible.builtin.command: "restorecon -Rv /usr/share/nginx/html"
+  become: true
